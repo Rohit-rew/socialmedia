@@ -6,9 +6,11 @@ import { Repository } from 'typeorm';
 
 import { CreatePostDto, CurrentUserDto, updatePostDto } from './dto';
 
+import {Users} from "../entities/user.entities"
+
 @Injectable()
 export class PostsService {
-  constructor(@InjectRepository(Posts) private postRepo: Repository<Posts>) {}
+  constructor(@InjectRepository(Posts) private postRepo: Repository<Posts> , @InjectRepository(Users) private userRepo: Repository<Users>) {}
 
   createPost(post: CreatePostDto, currentUser: CurrentUserDto) {
     const newPost = this.postRepo.create({ ...post, owner: currentUser });
@@ -16,9 +18,7 @@ export class PostsService {
   }
 
   async getAllPosts() {
-    const posts = await this.postRepo.createQueryBuilder('posts')
-    console.log(posts)
-    return this.postRepo.find({ relations: { owner: true }  });
+    return this.postRepo.find({ relations: { owner: true , votes : true }  });
   }
 
   async getPostById(id: string) {

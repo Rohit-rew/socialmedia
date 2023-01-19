@@ -11,6 +11,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Users } from './user.entities';
+import { Votes } from './votes.entities';
 
 export class Owner {
   email: string;
@@ -37,4 +38,7 @@ export class Posts {
   @ManyToOne(() => Users, (users) => users.posts , {nullable : false})
   @JoinColumn({ name: 'owner', referencedColumnName: 'id' })
   owner: Owner;
+
+  @OneToMany(()=>Votes , vote=>vote.posts)
+  votes : Votes[]
 }

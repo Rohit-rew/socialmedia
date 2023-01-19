@@ -9,7 +9,6 @@ import { LoginuserDto } from './dto';
 //bcrypt
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-import { Console } from 'console';
 
 @Injectable()
 export class AuthService {
@@ -21,14 +20,13 @@ export class AuthService {
   async loginUser(userData: LoginuserDto) {
     //check id user exists
     const user = await this.userRepo.findOne({
-      where: { email: userData.email },
+      where: { email: userData.email }, select : {password : true , email : true , id  :true}
     });
     if (!user) throw new HttpException('User does not exist', HttpStatus.NOT_FOUND);
 
     //check if pass is valid
     const isValidPass = await bcrypt.compare(userData.password, user.password);
     if (!isValidPass) throw new HttpException('Invalid password', HttpStatus.NOT_FOUND);
-
     // create and send JWT
     const jwt = await this.jwtService.signAsync(
       { id: user.id, email: user.email },

@@ -27,6 +27,6 @@ export class VoteService {
             return this.votesRepo.delete({owner_id : currentUser.id , post_id : vote.postId})
         }
 
-        //detete a vote
     }
 }
+ 

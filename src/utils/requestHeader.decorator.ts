@@ -20,14 +20,14 @@ export const RequestHeaders = createParamDecorator(
       const token = (headers.authorization as string)
         .replace('Bearer', '')
         .trim();
-      const docodedToken = await JWTService.verifyAsync(token, {
+      const decodedToken = await JWTService.verifyAsync(token, {
         algorithms: ['HS256'],
         secret: process.env.JWT_SECRET,
       });
 
       return {
-        id : docodedToken.id,
-        email : docodedToken.email
+        id : decodedToken.id,
+        email : decodedToken.email
       }
     } catch (error) {
       throw new HttpException('Invalid token Please log in again' , HttpStatus.NOT_ACCEPTABLE)

@@ -43,10 +43,15 @@ export class UsersService {
 
     // deletes esisting user
     async deleteUser(currentuser : CurrentUserDto , user : DeleteUserDto){
-        const existingUser = await this.usersRepo.findOne({where : {id : currentuser.id}})
+        // check if user exists
+        const existingUser = await this.usersRepo.findOne({where : {id : currentuser.id} , select : {password : true , id : true} } )
+
         if(!existingUser) throw new HttpException("user does not exist" , HttpStatus.NOT_FOUND)
+
+        // compare the id he wants to delete
         if(existingUser.id != currentuser.id) throw new HttpException("Not authorised" , HttpStatus.UNAUTHORIZED)
-        console.log(existingUser)
+
+        
         const isVallidPass = await bcrypt.compare(user.password,existingUser.password)
         if(!isVallidPass) throw new HttpException("invalid password" , HttpStatus.UNAUTHORIZED)
         return  {success : true , message  :"user deleted"}

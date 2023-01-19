@@ -13,7 +13,6 @@ export class PostsController {
 
     @Post()
     async createPost(@RequestHeaders() currentUser: CurrentUserDto , @Body() post : CreatePostDto){
-        console.log(post)
         return await this.postService.createPost(post , currentUser)
     }
 
