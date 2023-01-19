@@ -4,7 +4,7 @@ import { Users } from 'src/entities/user.entities';
 import { Repository } from 'typeorm';
 
 // dto imports
-import { CreateuserDto } from './dto';
+import { CreateuserDto, DeleteUserDto } from './dto';
 
 //jwt
 import { JwtService } from '@nestjs/jwt';
@@ -12,6 +12,7 @@ import { JwtService } from '@nestjs/jwt';
 //bcrypt
 import * as bcrypt from 'bcrypt'
 import { Posts } from 'src/entities/posts.entities';
+import { CurrentUserDto } from 'src/posts/dto';
 
 @Injectable()
 export class UsersService {
@@ -41,8 +42,14 @@ export class UsersService {
     }
 
     // deletes esisting user
-    deleteUserById(id : string){
-        return  this.usersRepo.delete({id : id})
+    async deleteUser(currentuser : CurrentUserDto , user : DeleteUserDto){
+        const existingUser = await this.usersRepo.findOne({where : {id : currentuser.id}})
+        if(!existingUser) throw new HttpException("user does not exist" , HttpStatus.NOT_FOUND)
+        if(existingUser.id != currentuser.id) throw new HttpException("Not authorised" , HttpStatus.UNAUTHORIZED)
+        console.log(existingUser)
+        const isVallidPass = await bcrypt.compare(user.password,existingUser.password)
+        if(!isVallidPass) throw new HttpException("invalid password" , HttpStatus.UNAUTHORIZED)
+        return  {success : true , message  :"user deleted"}
     }
 
 }

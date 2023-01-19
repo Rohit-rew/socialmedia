@@ -1,9 +1,10 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Posts } from 'src/entities/posts.entities';
+import { Votes } from 'src/entities/votes.entities';
 import { Repository } from 'typeorm';
 
-import { CreatePostDto, CurrentUserDto } from './dto';
+import { CreatePostDto, CurrentUserDto, updatePostDto } from './dto';
 
 @Injectable()
 export class PostsService {
@@ -14,24 +15,26 @@ export class PostsService {
     return this.postRepo.save(newPost);
   }
 
-  getAllPosts() {
-    return this.postRepo.find({ relations: { owner: true } });
+  async getAllPosts() {
+    const posts = await this.postRepo.createQueryBuilder('posts')
+    console.log(posts)
+    return this.postRepo.find({ relations: { owner: true }  });
   }
 
-  async getPostById(id: number) {
+  async getPostById(id: string) {
     const post = await this.postRepo.findOne({
       where: { id: id },
       relations: { owner: true },
     });
     if (!post)
-      throw new HttpException(
+      throw new HttpException( 
         `post with id: ${id} not found`,
         HttpStatus.NOT_FOUND,
       );
     return post;
   }
 
-  async deletePostById(id: number, currentUser: CurrentUserDto) {
+  async deletePostById(id: string, currentUser: CurrentUserDto) {
     const post = await this.postRepo.findOne({
       where: { id: id },
       relations: { owner: true },
@@ -41,16 +44,31 @@ export class PostsService {
         `post with id: ${id} not found`,
         HttpStatus.NOT_FOUND,
       );
-    if(post.owner.id != currentUser.id) throw new HttpException(
-        `Unauthorized attempt`,
-        HttpStatus.UNAUTHORIZED,
-    );
-    const deletedPost = await this.postRepo.delete({id : id})
-    if(deletedPost.affected != 1) throw new HttpException(
+    if (post.owner.id != currentUser.id)
+      throw new HttpException(`Unauthorized attempt`, HttpStatus.UNAUTHORIZED);
+    const deletedPost = await this.postRepo.delete({ id: id });
+    if (deletedPost.affected != 1)
+      throw new HttpException(
         `could not delete post with id: ${id}`,
         HttpStatus.UNPROCESSABLE_ENTITY,
-    );
-    return post
+      );
+    return post;
+  }
 
+  async updatePostById(
+    id: string,
+    currentUser: CurrentUserDto,
+    updatePost: updatePostDto,
+  ) {
+    const post = await this.getPostById(id);
+    if (post.owner.id != currentUser.id)
+      throw new HttpException(`Unauthorized attempt`, HttpStatus.UNAUTHORIZED);
+
+    const updatedPost = await this.postRepo.update({ id: post.id }, updatePost);
+    if(updatedPost.affected !==1) throw new HttpException(
+        `could not delete post with id: ${id}`,
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
+    return this.getPostById(id)
   }
 }

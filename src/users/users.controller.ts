@@ -42,10 +42,10 @@ export class UsersController {
 
   // delete user id will be extracted from token from headers
   @Delete()
-  deleteUser(
+  async deleteUser(
     @RequestHeaders() currentuser: CurrentUserDto,
     @Body() user: DeleteUserDto,
   ) {
-    return this.usersService.deleteUserById(user.id);
+    return await this.usersService.deleteUser(currentuser , user);
   }
 }

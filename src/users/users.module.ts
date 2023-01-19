@@ -6,7 +6,7 @@ import { Users } from 'src/entities/user.entities';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 
 @Module({
-  imports : [TypeOrmModule.forFeature([Users])],
+  imports : [TypeOrmModule.forFeature([Users]) , JwtModule],
   providers: [UsersService],
   controllers: [UsersController]
 })

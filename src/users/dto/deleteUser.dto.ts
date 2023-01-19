@@ -5,6 +5,4 @@ export class DeleteUserDto{
     @IsNotEmpty()
     password : string
 
-    @IsNotEmpty()
-    id : string
 }
