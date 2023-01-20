@@ -5,8 +5,11 @@ import { Votes } from 'src/entities/votes.entities';
 import { Repository } from 'typeorm';
 
 import { CreatePostDto, CurrentUserDto, updatePostDto } from './dto';
+import { postResponse } from './type';
 
 import {Users} from "../entities/user.entities"
+import { Exclude } from 'class-transformer';
+import { response } from 'express';
 
 @Injectable()
 export class PostsService {
@@ -18,7 +21,17 @@ export class PostsService {
   }
 
   async getAllPosts() {
-    return this.postRepo.find({ relations: { owner: true , votes : true }  });
+    const posts = await this.postRepo.find({ relations: { owner: true , votes : true }  });
+    let allPosts = []
+    class Response {
+      constructor(post : postResponse){
+        Object.assign(this , {...post , votes : post.votes.length})
+      }
+    }
+    for (let i in posts){
+      allPosts.push(new Response(posts[i]))
+    }
+    return allPosts
   }
 
   async getPostById(id: string) {
@@ -72,3 +85,8 @@ export class PostsService {
     return this.getPostById(id)
   }
 }
+
+
+
+// const posts = await this.postRepo.createQueryBuilder("posts").select("posts.* , COUNT(votes.post_id)" , "total_votes").leftJoinAndSelect('posts.owner' , 'users').leftJoin('posts.votes' , 'votes').groupBy(" posts.id , users.id ").execute()
+//     console.log(posts)
